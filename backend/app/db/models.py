@@ -87,7 +87,7 @@ class Task(Base):
     __tablename__ = "tasks"
     __table_args__ = (
         CheckConstraint(
-            "status IN ('CREATED', 'QUEUED', 'RUNNING', 'BLOCKED', 'COMPLETED', 'FAILED', 'REJECTED', 'CANCELLED', 'TIMEOUT')",
+            "status IN ('CREATED', 'QUEUED', 'RUNNING', 'COMPLETED', 'FAILED', 'CANCELLED')",
             name="ck_tasks_status",
         ),
         CheckConstraint("priority BETWEEN 1 AND 5", name="ck_tasks_priority"),
