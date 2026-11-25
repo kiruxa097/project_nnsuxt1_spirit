@@ -13,11 +13,10 @@ from app.db.models import (
     TaskDependency,
 )
 
-TERMINAL_FAILURE_STATUSES = {"FAILED", "CANCELLED", "TIMEOUT", "REJECTED"}
+TERMINAL_FAILURE_STATUSES = {"FAILED", "QUEUED","CANCELLED"}
 
 
 def get_required_dependencies(session: Session, process_id: str) -> list[dict[str, Any]]:
-    """Возвращает декларативные зависимости процесса из реестра."""
     proc = session.scalar(select(Process).where(Process.id == process_id))
     if not proc:
         raise ValueError(f"Процесс {process_id} не найден в реестре")
@@ -25,7 +24,6 @@ def get_required_dependencies(session: Session, process_id: str) -> list[dict[st
 
 
 def register_task_dependencies(session: Session, task: Task) -> list[TaskDependency]:
-    """Создаёт записи зависимостей в task_dependencies перед постановкой запуска в работу."""
     existing = session.scalars(
         select(TaskDependency).where(TaskDependency.task_id == task.id)
     ).all()
@@ -85,10 +83,8 @@ def evaluate_task_dependencies(
 
     if not deps:
         return {"state": "READY", "reason": "Зависимостей нет", "blocking_task_id": None}
-
     for dep in deps:
         dep.checked_at = now
-
         # 1. Зависимость BP-04 -> BP-03 за ту же дату
         if task.process_id == "BP-04" and dep.depends_on_process_id == "BP-03":
             target_date = dep.required_partition_key
@@ -131,14 +127,14 @@ def evaluate_task_dependencies(
                     .where(
                         Task.process_id == "BP-03",
                         Task.params["monitoring_date"].astext == target_date,
-                        Task.status.in_(("CREATED", "QUEUED", "RUNNING", "BLOCKED")),
+                        Task.status.in_(("CREATED", "QUEUED", "RUNNING")),
                     )
                     .order_by(Task.id.asc())
                 )
                 dep.is_satisfied = False
                 dep.depends_on_task_id = active_bp03.id if active_bp03 else None
                 reason = f"Ожидание успешного завершения BP-03 за дату {target_date}"
-                _log_dependency_decision(session, task, "DEPENDENCY_WAIT", "BLOCKED", reason)
+                _log_dependency_decision(session, task, "DEPENDENCY_WAIT", "QUEUED", reason)
                 return {
                     "state": "WAITING",
                     "reason": reason,
@@ -147,7 +143,6 @@ def evaluate_task_dependencies(
 
             dep.is_satisfied = True
             dep.depends_on_task_id = completed_bp03.id
-
         # 2. Зависимость BP-01 -> BP-02 (актуальные данные клиента)
         elif task.process_id == "BP-01" and dep.depends_on_process_id == "BP-02":
             running_bp02 = session.scalar(
@@ -162,7 +157,7 @@ def evaluate_task_dependencies(
                 dep.is_satisfied = False
                 dep.depends_on_task_id = running_bp02.id
                 reason = f"Ожидание завершения обновления клиентов BP-02 (task_id={running_bp02.id})"
-                _log_dependency_decision(session, task, "DEPENDENCY_WAIT", "BLOCKED", reason)
+                _log_dependency_decision(session, task, "DEPENDENCY_WAIT", "QUEUED", reason)
                 return {
                     "state": "WAITING",
                     "reason": reason,
@@ -183,7 +178,7 @@ def evaluate_task_dependencies(
                             f"Данные клиента id={client.id} устарели (обновлены {client.updated_at.isoformat()}); "
                             f"требуется актуальный BP-02"
                         )
-                        _log_dependency_decision(session, task, "DEPENDENCY_STALE", "BLOCKED", reason)
+                        _log_dependency_decision(session, task, "DEPENDENCY_STALE", "QUEUED", reason)
                         return {
                             "state": "WAITING",
                             "reason": reason,
