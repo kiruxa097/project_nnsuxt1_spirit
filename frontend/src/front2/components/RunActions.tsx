@@ -6,18 +6,18 @@ import type { Priority, Run } from '../types'
 
 type Props = {
   run: Run
-  onChanged: () => void // вызвать, чтобы страница перезагрузила данные
-  hideJournal?: boolean // на странице самого запуска ссылка на журнал не нужна
+  onChanged: () => void // чтобы страница перезагрузила данные
+  hideJournal?: boolean
 }
 
-// Кнопки показываются только там, где действие допустимо.
+
 export default function RunActions({ run, onChanged, hideJournal }: Props) {
   const [editing, setEditing] = useState(false)
   const [priority, setPriority] = useState<Priority>(run.priority)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Если бэк прислал canCancel / canChangePriority — верим ему, иначе считаем по статусу
+  //////////////////////////////////////
   const canCancel = run.canCancel ?? ACTIVE_STATUSES.includes(run.status)
   const canChangePriority = run.canChangePriority ?? (run.status === 'CREATED' || run.status === 'QUEUED')
 
