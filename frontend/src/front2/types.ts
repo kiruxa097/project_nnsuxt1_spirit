@@ -31,6 +31,7 @@ export const PROCESS_OPTIONS = [
   { id: 'BP-02', name: 'Обновление информации о клиентах' },
   { id: 'BP-03', name: 'Мониторинг просроченных платежей' },
   { id: 'BP-04', name: 'Отчёт по кредитному портфелю' },
+  { id: 'PAYMENTS_SYNC', name: 'Синхронизация платежей' },
 ]
 
 export type RunId = string | number

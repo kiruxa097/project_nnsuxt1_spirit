@@ -18,8 +18,9 @@ export const priorityLabels: Record<Priority, string> = {
 }
 
 export function formatDate(iso: string): string {
-  const [year, month, day] = iso.split('-')
-  return `${day}.${month}.${year}`
+  const value = iso.slice(0, 10)
+  const [year, month, day] = value.split('-')
+  return year && month && day ? `${day}.${month}.${year}` : iso
 }
 
 export const priorityOrder: Priority[] = ['CRITICAL', 'HIGH', 'MEDIUM', 'NORMAL', 'LOW']

@@ -1,16 +1,19 @@
 import type { LaunchResponse, LaunchStatus } from '../types'
 
 const titles: Record<LaunchStatus, string> = {
-  ACCEPTED: 'Запуск принят',
+  CREATED: 'Запуск зарегистрирован',
   QUEUED: 'Запуск поставлен в очередь',
-  REJECTED: 'Запуск отклонён',
+  RUNNING: 'Запуск допущен к выполнению',
+  COMPLETED: 'Запуск завершён успешно',
+  FAILED: 'Запуск завершился ошибкой',
+  CANCELLED: 'Запуск отменён',
 }
 
 export default function LaunchResult({ result }: { result: LaunchResponse }) {
   return (
     <div className={`result result-${result.status.toLowerCase()}`}>
       <strong>{titles[result.status]}</strong>
-      {result.runId !== undefined && <span> · запуск #{result.runId}</span>}
+      <span> · запуск #{result.runId}</span>
       {result.reason && <p>Причина: {result.reason}</p>}
     </div>
   )

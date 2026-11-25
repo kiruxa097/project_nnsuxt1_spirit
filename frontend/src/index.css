@@ -204,6 +204,8 @@ button.btn:disabled { opacity: 0.6; cursor: wait; }
 .result-block { max-width: 520px; margin-top: 16px; }
 .result { padding: 14px 16px; border-radius: 8px; border: 1px solid var(--border); }
 .result p { margin: 6px 0 0; }
-.result-accepted { color: #3ecf8e; background: rgba(62, 207, 142, 0.1); border-color: rgba(62, 207, 142, 0.35); }
+.result-created { color: #60a5fa; background: rgba(96, 165, 250, 0.1); border-color: rgba(96, 165, 250, 0.35); }
 .result-queued { color: #f5a524; background: rgba(245, 165, 36, 0.1); border-color: rgba(245, 165, 36, 0.35); }
-.result-rejected { color: #f31260; background: rgba(243, 18, 96, 0.1); border-color: rgba(243, 18, 96, 0.35); }
+.result-running { color: #60a5fa; background: rgba(96, 165, 250, 0.1); border-color: rgba(96, 165, 250, 0.35); }
+.result-completed { color: #3ecf8e; background: rgba(62, 207, 142, 0.1); border-color: rgba(62, 207, 142, 0.35); }
+.result-failed, .result-cancelled { color: #f31260; background: rgba(243, 18, 96, 0.1); border-color: rgba(243, 18, 96, 0.35); }

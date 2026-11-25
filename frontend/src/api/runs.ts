@@ -1,49 +1,77 @@
-import type { DashboardSummary, LaunchRequest, LaunchResponse } from '../types'
-// import { api } from './client' // раскомментировать, когда появится настоящий эндпоинт
+import { api } from './client'
+import type { DashboardSummary, LaunchRequest, LaunchResponse, Priority, Run, RunStatus } from '../types'
+
+type BackendExecution = {
+  id: number
+  process_id: string
+  process_code: string
+  status: RunStatus
+  report_date: string | null
+  params: Record<string, unknown>
+  priority: number
+  decision_reason: string | null
+  blocked_by_task_id: number | null
+  created_at: string
+  started_at: string | null
+  finished_at: string | null
+}
+
+const PRIORITY_TO_NUMBER: Record<Priority, number> = {
+  CRITICAL: 1,
+  HIGH: 2,
+  MEDIUM: 3,
+  NORMAL: 4,
+  LOW: 5,
+}
+
+function toPriority(value: number): Priority {
+  const priorities: Priority[] = ['CRITICAL', 'HIGH', 'MEDIUM', 'NORMAL', 'LOW']
+  return priorities[Math.max(0, Math.min(4, value - 1))]
+}
+
+function mapExecution(execution: BackendExecution): Run {
+  return {
+    id: execution.id,
+    processId: execution.process_id,
+    date: execution.report_date ?? execution.created_at,
+    status: execution.status,
+    priority: toPriority(execution.priority),
+  }
+}
 
 export async function getDashboardSummary(): Promise<DashboardSummary> {
-  // TODO (бэкенд): вставить эндпоинт, который отдаёт счётчики запусков и последние запуски.
-  // Когда он будет известен, заменить тестовые данные ниже на:
-  //   const { data } = await api.get<DashboardSummary>('/СЮДА_ЭНДПОИНТ')
-  //   return data
-
-  // Временные тестовые данные, чтобы страницу можно было смотреть без бэкенда
+  const { data } = await api.get<BackendExecution[]>('/executions')
   return {
-    total: 12,
-    running: 2,
-    queued: 3,
-    completed: 6,
-    failed: 1,
-    recentRuns: [
-      { id: 1023, processId: 'BP-04', date: '2026-11-24', status: 'CREATED', priority: 'NORMAL' },
-      { id: 1022, processId: 'BP-03', date: '2026-11-24', status: 'QUEUED', priority: 'NORMAL' },
-      { id: 1021, processId: 'BP-02', date: '2026-11-24', status: 'RUNNING', priority: 'HIGH' },
-      { id: 1020, processId: 'BP-01', date: '2026-11-24', status: 'COMPLETED', priority: 'HIGH' },
-      { id: 1019, processId: 'BP-03', date: '2026-11-23', status: 'FAILED', priority: 'NORMAL' },
-    ],
+    total: data.length,
+    running: data.filter((run) => run.status === 'RUNNING').length,
+    queued: data.filter((run) => run.status === 'QUEUED' || run.status === 'CREATED').length,
+    completed: data.filter((run) => run.status === 'COMPLETED').length,
+    failed: data.filter((run) => run.status === 'FAILED').length,
+    recentRuns: data.slice(0, 10).map(mapExecution),
   }
 }
 
 export async function launchProcess(request: LaunchRequest): Promise<LaunchResponse> {
-  // TODO (бэкенд): вставить эндпоинт запуска процесса (метод и адрес уточнить у бэкендеров).
-  // Когда он будет известен, заменить тестовую логику ниже на что-то вроде:
-  //   const { data } = await api.post<LaunchResponse>('/СЮДА_ЭНДПОИНТ', request)
-  //   return data
+  const params: Record<string, unknown> = { ...request.params }
+  if (typeof params.client_ids === 'string') {
+    params.client_ids = params.client_ids
+      .split(',')
+      .map((value) => value.trim())
+      .filter(Boolean)
+      .map((value) => Number(value))
+    if ((params.client_ids as number[]).some((value) => !Number.isInteger(value) || value <= 0)) {
+      throw new Error('ID клиентов должны быть положительными целыми числами')
+    }
+  }
 
-  // Временная имитация ответов сервера, чтобы посмотреть все три варианта ответа:
-  await new Promise((resolve) => setTimeout(resolve, 500))
-  if (request.processId === 'BP-01') {
-    return {
-      status: 'QUEUED',
-      runId: 1024,
-      reason: 'Ресурс client_database занят задачей #1021 в режиме WRITE',
-    }
+  const { data } = await api.post<BackendExecution>('/executions', {
+    process_id: request.processId,
+    params,
+    priority: PRIORITY_TO_NUMBER[request.priority],
+  })
+  return {
+    status: data.status,
+    runId: data.id,
+    reason: data.decision_reason,
   }
-  if (request.processId === 'BP-03' && request.params.monitoringDate === '2026-11-24') {
-    return {
-      status: 'REJECTED',
-      reason: 'Мониторинг просрочек за 24.11.2026 уже выполняется (запуск #1022)',
-    }
-  }
-  return { status: 'ACCEPTED', runId: 1025 }
 }

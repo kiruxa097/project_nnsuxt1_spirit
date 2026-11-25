@@ -30,6 +30,7 @@ function validate(params: ProcessParam[], values: Values): Values {
   const errors: Values = {}
   for (const param of params) {
     const value = (values[param.name] ?? '').trim()
+    if (!value && param.required === false) continue
     if (!value) {
       errors[param.name] = 'Поле обязательно для заполнения'
     } else if (param.type === 'list') {
@@ -94,7 +95,6 @@ function LaunchContent({ processId }: { processId: string }) {
     setSubmitError(null)
     setResult(null)
     try {
-      //TODO: формат списка клиентов (строка или массив) уточнить у бэкенда
       const response = await launchProcess({ processId: process.id, params: values, priority })
       setResult(response)
     } catch (err) {
