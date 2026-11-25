@@ -1,0 +1,309 @@
+openapi: 3.0.3
+info:
+  title: Bank API
+  version: 1.0.0
+servers:
+  - url: http://127.0.0.1:8000
+paths:
+  /executions:
+    post:
+      summary: Создать запуск процесса
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [process_id]
+              properties:
+                process_id:
+                  type: integer
+                report_date:
+                  type: string
+                  format: date
+                  nullable: true
+                  description: Дата запуска (нужна для BP-03 и BP-04)
+      responses:
+        "201":
+          description: Запуск создан
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [id, process_id, process_code, status, created_at]
+                properties:
+                  id:
+                    type: integer
+                  process_id:
+                    type: integer
+                  process_code:
+                    type: string
+                    example: BP-01
+                  status:
+                    type: string
+                    enum: [queued, waiting_dependency, running, success, failed, cancelled]
+                  report_date:
+                    type: string
+                    format: date
+                    nullable: true
+                  created_at:
+                    type: string
+                    format: date-time
+                  started_at:
+                    type: string
+                    format: date-time
+                    nullable: true
+                  finished_at:
+                    type: string
+                    format: date-time
+                    nullable: true
+        "422":
+          description: Неверные данные запроса
+    get:
+      summary: Список запусков
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required: [id, process_id, process_code, status, created_at]
+                  properties:
+                    id:
+                      type: integer
+                    process_id:
+                      type: integer
+                    process_code:
+                      type: string
+                      example: BP-01
+                    status:
+                      type: string
+                      enum: [queued, waiting_dependency, running, success, failed, cancelled]
+                    report_date:
+                      type: string
+                      format: date
+                      nullable: true
+                    created_at:
+                      type: string
+                      format: date-time
+                    started_at:
+                      type: string
+                      format: date-time
+                      nullable: true
+                    finished_at:
+                      type: string
+                      format: date-time
+                      nullable: true
+
+  /executions/{id}:
+    get:
+      summary: Информация о запуске
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [id, process_id, process_code, status, created_at]
+                properties:
+                  id:
+                    type: integer
+                  process_id:
+                    type: integer
+                  process_code:
+                    type: string
+                    example: BP-01
+                  status:
+                    type: string
+                    enum: [queued, waiting_dependency, running, success, failed, cancelled]
+                  report_date:
+                    type: string
+                    format: date
+                    nullable: true
+                  created_at:
+                    type: string
+                    format: date-time
+                  started_at:
+                    type: string
+                    format: date-time
+                    nullable: true
+                  finished_at:
+                    type: string
+                    format: date-time
+                    nullable: true
+        "404":
+          description: Запуск не найден
+
+  /executions/{id}/cancel:
+    post:
+      summary: Отменить запуск
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Запуск отменён
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [id, status]
+                properties:
+                  id:
+                    type: integer
+                  status:
+                    type: string
+                    enum: [cancelled]
+        "404":
+          description: Запуск не найден
+        "409":
+          description: Запуск уже завершён, отменить нельзя
+
+  /processes:
+    get:
+      summary: Список процессов
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required: [id, code, name, duplicate_policy]
+                  properties:
+                    id:
+                      type: integer
+                    code:
+                      type: string
+                      example: BP-01
+                    name:
+                      type: string
+                    description:
+                      type: string
+                    duplicate_policy:
+                      type: string
+                      enum: [allow, skip_if_running, reject]
+
+  /queue:
+    get:
+      summary: Процессы в очереди
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required: [execution_id, process_code, status]
+                  properties:
+                    execution_id:
+                      type: integer
+                    process_code:
+                      type: string
+                    status:
+                      type: string
+                      enum: [queued, waiting_dependency]
+                    position:
+                      type: integer
+                      description: Место в очереди
+
+  /locks:
+    get:
+      summary: Список блокировок
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required: [resource_code, execution_id, lock_type]
+                  properties:
+                    resource_code:
+                      type: string
+                      example: clients
+                    execution_id:
+                      type: integer
+                    lock_type:
+                      type: string
+                      enum: [shared, exclusive]
+
+  /reports/{id}:
+    get:
+      summary: Отчёт по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [id, execution_id, total_debt, overdue_share, by_region]
+                properties:
+                  id:
+                    type: integer
+                  execution_id:
+                    type: integer
+                  total_debt:
+                    type: number
+                  overdue_share:
+                    type: number
+                    description: Доля просроченных кредитов, от 0 до 1
+                  by_region:
+                    type: array
+                    items:
+                      type: object
+                      required: [region, client_type, total_debt, overdue_share]
+                      properties:
+                        region:
+                          type: string
+                        client_type:
+                          type: string
+                          enum: [individual, corporate]
+                        total_debt:
+                          type: number
+                        overdue_share:
+                          type: number
+        "404":
+          description: Отчёт не найден
+
+  /health:
+    get:
+      summary: Статус сервиса
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status:
+                    type: string
+                    enum: [ok]
