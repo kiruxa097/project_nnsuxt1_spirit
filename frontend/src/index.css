@@ -162,3 +162,48 @@ a { color: var(--accent); }
   border-radius: 8px;
 }
 .btn-disabled { color: var(--muted); background: var(--border); cursor: not-allowed; }
+
+
+/*Форма запуска*/
+.launch-form {
+  max-width: 520px;
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.field { margin-bottom: 16px; }
+.field label { display: block; margin-bottom: 6px; font-size: 14px; font-weight: 600; }
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  padding: 10px 12px;
+  font: inherit;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.field input:focus,
+.field select:focus,
+.field textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+.field-error { margin-top: 6px; font-size: 13px; color: #f31260; }
+
+button.btn { border: 0; font: inherit; font-weight: 600; cursor: pointer; }
+button.btn:disabled { opacity: 0.6; cursor: wait; }
+
+.alert-warning {
+  padding: 12px 16px;
+  color: #f5a524;
+  background: rgba(245, 165, 36, 0.1);
+  border: 1px solid rgba(245, 165, 36, 0.35);
+  border-radius: 8px;
+}
+
+.result-block { max-width: 520px; margin-top: 16px; }
+.result { padding: 14px 16px; border-radius: 8px; border: 1px solid var(--border); }
+.result p { margin: 6px 0 0; }
+.result-accepted { color: #3ecf8e; background: rgba(62, 207, 142, 0.1); border-color: rgba(62, 207, 142, 0.35); }
+.result-queued { color: #f5a524; background: rgba(245, 165, 36, 0.1); border-color: rgba(245, 165, 36, 0.35); }
+.result-rejected { color: #f31260; background: rgba(243, 18, 96, 0.1); border-color: rgba(243, 18, 96, 0.35); }

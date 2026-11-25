@@ -45,3 +45,20 @@ export type ProcessInfo = {
   available: boolean 
   unavailableReason?: string 
 }
+
+export type LaunchRequest = {
+  processId: string 
+  params: Record<string, string> 
+  priority: Priority
+}
+
+export type LaunchStatus =
+  | 'ACCEPTED' // принят и сразу пошёл в работу
+  | 'QUEUED' // принят, но ждёт в очереди
+  | 'REJECTED' // отклонён
+
+export type LaunchResponse = {
+  status: LaunchStatus
+  runId?: number 
+  reason?: string 
+}

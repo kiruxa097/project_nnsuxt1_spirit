@@ -52,3 +52,14 @@ export async function getProcesses(): Promise<ProcessInfo[]> {
     },
   ]
 }
+
+export async function getProcess(id: string): Promise<ProcessInfo | null> {
+  // TODO (бэкенд): эндпоинт известен — GET /api/v1/processes/{id}.
+  // Когда бэкенд будет готов, заменить тело функции на:
+  //   const { data } = await api.get<ProcessInfo>(`/processes/${id}`)
+  //   return data
+
+  // Пока берём процесс из тестового списка
+  const all = await getProcesses()
+  return all.find((process) => process.id === id) ?? null
+}

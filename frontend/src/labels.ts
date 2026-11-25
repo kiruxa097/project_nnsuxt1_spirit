@@ -21,3 +21,5 @@ export function formatDate(iso: string): string {
   const [year, month, day] = iso.split('-')
   return `${day}.${month}.${year}`
 }
+
+export const priorityOrder: Priority[] = ['CRITICAL', 'HIGH', 'MEDIUM', 'NORMAL', 'LOW']
