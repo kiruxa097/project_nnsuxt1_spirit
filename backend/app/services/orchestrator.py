@@ -230,7 +230,7 @@ def _admit_or_queue(db: Session, task: Task, process: Process) -> Task:
     return task
 
 
-def create_execution(db: Session, process_id: str, params: dict[str, Any]) -> Task:
+def create_execution(db: Session, process_id: str, params: dict[str, Any], priority: int | None = None) -> Task:
     # Блокировка строки процесса сериализует одновременные проверки дублей
     # и лимита параллелизма для данного BP.
     process = db.scalar(
@@ -269,7 +269,7 @@ def create_execution(db: Session, process_id: str, params: dict[str, Any]) -> Ta
         idempotency_key=key,
         params=params,
         status="CREATED",
-        priority=process.default_priority,
+        priority=priority if priority is not None else process.default_priority,
         result_version=last_version + 1,
     )
     db.add(task)
@@ -340,6 +340,8 @@ def cancel_execution(db: Session, execution_id: int) -> Task:
     _log(db, task, "EXECUTION_CANCELLED", "ALLOW", task.decision_reason)
     db.commit()
     db.refresh(task)
+    promote_waiting_tasks(db)
+    db.commit()
     return task
 
 
@@ -373,16 +375,60 @@ def get_queue(db: Session) -> list[dict]:
 
 def list_locks(db: Session) -> list[dict]:
     rows = db.execute(
-        select(Lock, Resource)
+        select(Lock, Resource, Task)
         .join(Resource, Resource.id == Lock.resource_id)
-        .where(Lock.lease_expires_at > now_utc())
+        .join(Task, Task.id == Lock.owner_task_id)
+        .where(Lock.lease_expires_at > now_utc(), Task.status == "RUNNING")
         .order_by(Resource.code, Lock.partition_key)
     ).all()
+    result = []
+    for lock, resource, holder in rows:
+        waiters = db.scalars(select(Task).where(
+            Task.status == "QUEUED", Task.blocked_by_task_id == holder.id,
+        ).order_by(Task.created_at.asc())).all()
+        result.append({
+            "resource_code": resource.code,
+            "execution_id": lock.owner_task_id,
+            "lock_type": "shared" if lock.lock_mode == "READ" else "exclusive",
+            "partition_key": lock.partition_key,
+            "holder_process_id": holder.process_id,
+            "acquired_at": lock.acquired_at,
+            "waiters": [
+                {"run_id": waiter.id, "process_id": waiter.process_id, "mode": "WRITE"}
+                for waiter in waiters
+            ],
+        })
+    return result
+
+
+def get_execution_logs(db: Session, execution_id: int) -> list[dict]:
+    if db.get(Task, execution_id) is None:
+        raise HTTPException(status_code=404, detail="Запуск не найден")
+    rows = db.scalars(
+        select(ExecutionLog).where(ExecutionLog.task_id == execution_id)
+        .order_by(ExecutionLog.created_at.asc(), ExecutionLog.id.asc())
+    ).all()
     return [{
-        "resource_code": resource.code,
-        "execution_id": lock.owner_task_id,
-        "lock_type": "shared" if lock.lock_mode == "READ" else "exclusive",
-    } for lock, resource in rows]
+        "time": row.created_at,
+        "level": "error" if row.decision == "DENY" else "info",
+        "message": f"{row.event_type}: {row.reason or row.decision}",
+    } for row in rows]
+
+
+def change_execution_priority(db: Session, execution_id: int, priority: int) -> Task:
+    task = db.scalar(select(Task).where(Task.id == execution_id).with_for_update())
+    if task is None:
+        raise HTTPException(status_code=404, detail="Запуск не найден")
+    if task.status not in ("CREATED", "QUEUED"):
+        raise HTTPException(status_code=409, detail="Приоритет можно менять только до начала выполнения")
+    task.priority = priority
+    task.updated_at = now_utc()
+    _log(db, task, "PRIORITY_CHANGED", "ALLOW", f"Установлен приоритет {priority}")
+    db.commit()
+    db.refresh(task)
+    promote_waiting_tasks(db)
+    db.commit()
+    return task
 
 
 def heartbeat(db: Session, execution_id: int, lease_seconds: int = 300) -> Task:

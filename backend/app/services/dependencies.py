@@ -63,6 +63,8 @@ def _resolve_partition_key(task: Task, spec: dict[str, Any]) -> str:
     params = task.params or {}
     if task.process_id == "BP-04" and spec.get("process_id") == "BP-03":
         return str(params.get("report_date") or params.get("monitoring_date") or "DEFAULT")
+    if task.process_id == "BP-03" and spec.get("process_id") == "PAYMENTS_SYNC":
+        return str(params.get("monitoring_date") or params.get("sync_date") or "DEFAULT")
     if task.process_id == "BP-01" and spec.get("process_id") == "BP-02":
         return str(params.get("application_number") or "ALL_CLIENTS")
     return str(params.get("date") or "DEFAULT")
@@ -143,7 +145,36 @@ def evaluate_task_dependencies(
 
             dep.is_satisfied = True
             dep.depends_on_task_id = completed_bp03.id
-        # 2. Зависимость BP-01 -> BP-02 (актуальные данные клиента)
+        # 2. BP-03 требует завершённой синхронизации фактических платежей за ту же дату.
+        elif task.process_id == "BP-03" and dep.depends_on_process_id == "PAYMENTS_SYNC":
+            target_date = dep.required_partition_key
+            sync_task = session.scalar(
+                select(Task)
+                .where(
+                    Task.process_id == "PAYMENTS_SYNC",
+                    Task.params["sync_date"].astext == target_date,
+                )
+                .order_by(Task.id.desc())
+            )
+            if sync_task is None or sync_task.status in ("CREATED", "QUEUED", "RUNNING"):
+                dep.is_satisfied = False
+                dep.depends_on_task_id = sync_task.id if sync_task else None
+                reason = f"Ожидание PAYMENTS_SYNC за дату {target_date}"
+                _log_dependency_decision(session, task, "DEPENDENCY_WAIT", "QUEUED", reason)
+                return {
+                    "state": "WAITING",
+                    "reason": reason,
+                    "blocking_task_id": sync_task.id if sync_task else None,
+                }
+            if sync_task.status != "COMPLETED":
+                dep.is_satisfied = False
+                dep.depends_on_task_id = sync_task.id
+                reason = f"PAYMENTS_SYNC за дату {target_date} завершился со статусом {sync_task.status}"
+                _log_dependency_decision(session, task, "DEPENDENCY_FAILED", "ABORT", reason)
+                return {"state": "ABORT", "reason": reason, "blocking_task_id": sync_task.id}
+            dep.is_satisfied = True
+            dep.depends_on_task_id = sync_task.id
+        # 3. Зависимость BP-01 -> BP-02 (актуальные данные клиента)
         elif task.process_id == "BP-01" and dep.depends_on_process_id == "BP-02":
             running_bp02 = session.scalar(
                 select(Task)

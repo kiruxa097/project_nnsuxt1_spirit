@@ -25,6 +25,7 @@ type BackendLock = {
   partition_key: string
   holder_process_id: string
   acquired_at: string
+  waiters: { run_id: number; process_id: string; mode: 'READ' | 'WRITE' }[]
 }
 
 export const ENDPOINTS = {
@@ -115,12 +116,18 @@ export async function getLocks(): Promise<Lock[]> {
     holderProcessId: lock.holder_process_id || byId.get(lock.execution_id)?.process_id || '—',
     mode: lock.lock_type === 'shared' ? 'READ' : 'WRITE',
     acquiredAt: lock.acquired_at,
-    waiters: [],
+    waiters: (lock.waiters ?? []).map((waiter) => ({ runId: waiter.run_id, processId: waiter.process_id, mode: waiter.mode })),
   }))
 }
 
-export async function getHistory(_filters: HistoryFilters): Promise<Run[]> {
-  return (await getExecutions()).map(mapRun)
+export async function getHistory(filters: HistoryFilters): Promise<Run[]> {
+  return (await getExecutions()).map(mapRun).filter((run) => {
+    const created = run.createdAt.slice(0, 10)
+    if (filters.processId && filters.processId !== 'ALL' && run.processId !== filters.processId) return false
+    if (filters.dateFrom && created < filters.dateFrom) return false
+    if (filters.dateTo && created > filters.dateTo) return false
+    return true
+  })
 }
 
 export async function getRun(id: RunId): Promise<Run | null> {

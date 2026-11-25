@@ -7,11 +7,11 @@ from app.db.database import get_db
 from app.db.models import Task
 from app.schemas.execution import (
     CancelResponse, ExecutionCreate, ExecutionResponse, LockResponse,
-    ProcessResponse, QueueResponse,
+    ProcessResponse, QueueResponse, LogResponse, PriorityUpdate,
 )
 from app.services.orchestrator import (
     cancel_execution, create_execution, get_queue, list_locks,
-    list_processes, list_tasks, promote_waiting_tasks,
+    list_processes, list_tasks, promote_waiting_tasks, get_execution_logs, change_execution_priority,
 )
 
 router = APIRouter()
@@ -39,6 +39,10 @@ def serialize_execution(task: Task) -> dict:
         "process_code": task.process_id,
         "status": to_api_status(task.status),
         "report_date": report_date,
+        "params": params,
+        "priority": task.priority,
+        "decision_reason": task.decision_reason,
+        "blocked_by_task_id": task.blocked_by_task_id,
         "created_at": task.created_at,
         "started_at": task.started_at,
         "finished_at": task.finished_at,
@@ -69,7 +73,7 @@ def create_execution_endpoint(
         else:
             params.setdefault("report_date", payload.report_date.isoformat())
 
-    task = create_execution(db, payload.process_id, params)
+    task = create_execution(db, payload.process_id, params, payload.priority)
     # При освобождении ресурсов/завершении задач очередь также продвигается.
     return serialize_execution(task)
 
@@ -137,3 +141,25 @@ def get_queue_endpoint(db: Session = Depends(get_db)):
 )
 def get_locks_endpoint(db: Session = Depends(get_db)):
     return list_locks(db)
+
+@router.get(
+    "/executions/{execution_id}/logs",
+    response_model=list[LogResponse],
+    summary="Журнал событий запуска",
+)
+def get_execution_logs_endpoint(execution_id: int, db: Session = Depends(get_db)):
+    return get_execution_logs(db, execution_id)
+
+
+@router.patch(
+    "/executions/{execution_id}/priority",
+    response_model=ExecutionResponse,
+    summary="Изменить приоритет запуска",
+)
+def change_execution_priority_endpoint(
+    execution_id: int,
+    payload: PriorityUpdate,
+    db: Session = Depends(get_db),
+):
+    task = change_execution_priority(db, execution_id, payload.priority)
+    return serialize_execution(task)

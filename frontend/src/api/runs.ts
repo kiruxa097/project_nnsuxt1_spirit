@@ -75,3 +75,9 @@ export async function launchProcess(request: LaunchRequest): Promise<LaunchRespo
     reason: data.decision_reason,
   }
 }
+
+
+export async function getExecutions(): Promise<Run[]> {
+  const { data } = await api.get<BackendExecution[]>('/executions')
+  return data.map(mapExecution)
+}
