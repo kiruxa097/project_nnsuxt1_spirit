@@ -13,7 +13,7 @@ export default function HistoryPage() {
   const [filters, setFilters] = useState<HistoryFilters>({ dateFrom: '', dateTo: '', processId: '' })
   const { data, error, updatedAt, reload } = useAutoRefresh(() => getHistory(filters))
 
-  //при смене фильтра сразу перезапрашиваем данные
+
   useEffect(() => {
     void reload()
   }, [filters, reload])

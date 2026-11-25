@@ -1,5 +1,3 @@
-// Типы и справочники для части «Оркестратор» (Фронт 2).
-// TODO: сверить названия полей с бэкендом (Настя) — сейчас это наши предположения.
 
 export type RunStatus = 'CREATED' | 'QUEUED' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'CANCELLED'
 export type Priority = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'NORMAL' | 'LOW'
@@ -14,7 +12,6 @@ export const STATUS_LABELS: Record<RunStatus, string> = {
   CANCELLED: 'Отменён',
 }
 
-// От самого важного к наименее важному
 export const PRIORITY_ORDER: Priority[] = ['CRITICAL', 'HIGH', 'MEDIUM', 'NORMAL', 'LOW']
 
 export const PRIORITY_LABELS: Record<Priority, string> = {
@@ -28,7 +25,7 @@ export const PRIORITY_LABELS: Record<Priority, string> = {
 export const ACTIVE_STATUSES: RunStatus[] = ['CREATED', 'QUEUED', 'RUNNING']
 export const FINISHED_STATUSES: RunStatus[] = ['COMPLETED', 'FAILED', 'CANCELLED']
 
-// TODO: если у бэка другие id процессов — поправить (или брать список из запроса процессов Фронта 1)
+
 export const PROCESS_OPTIONS = [
   { id: 'BP-01', name: 'Проверка заявки на кредит' },
   { id: 'BP-02', name: 'Обновление информации о клиентах' },
@@ -40,20 +37,19 @@ export type RunId = string | number
 
 export type Run = {
   id: RunId
-  processId: string // 'BP-01'...
+  processId: string 
   processName: string
-  params: Record<string, unknown> // параметры запуска (дата, № заявки...)
+  params: Record<string, unknown> // параметры запуска
   initiator: string
   priority: Priority
   status: RunStatus
-  createdAt: string // ISO-дата
+  createdAt: string 
   startedAt: string | null
   finishedAt: string | null
-  reason: string | null // причина ожидания / ошибки / отказа
-  blockedByRunId: RunId | null // какой запуск блокирует этот
-  blockedResource: string | null // за какой ресурс идёт конфликт
-  result: string | null // краткий результат выполнения
-  // Если бэк сам говорит, какие действия допустимы — используем это, иначе считаем по статусу
+  reason: string | null 
+  blockedByRunId: RunId | null 
+  blockedResource: string | null 
+  result: string | null 
   canCancel?: boolean
   canChangePriority?: boolean
 }
@@ -62,12 +58,12 @@ export type LockWaiter = { runId: RunId; processId: string; mode: AccessMode }
 
 export type Lock = {
   id: RunId
-  resource: string // например 'credit_registry'
-  partition: string | null // дата / период / № заявки
+  resource: string 
+  partition: string | null 
   holderRunId: RunId
   holderProcessId: string
   mode: AccessMode
-  acquiredAt: string // когда блокировка появилась
+  acquiredAt: string 
   waiters: LockWaiter[]
 }
 
@@ -78,7 +74,7 @@ export type LogEntry = {
 }
 
 export type HistoryFilters = {
-  dateFrom: string // 'YYYY-MM-DD' или ''
+  dateFrom: string 
   dateTo: string
-  processId: string // '' = все
+  processId: string 
 }

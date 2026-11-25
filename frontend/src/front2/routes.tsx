@@ -6,7 +6,7 @@ import LocksPage from './pages/LocksPage'
 import QueuePage from './pages/QueuePage'
 import RunDetailPage from './pages/RunDetailPage'
 
-// Маршруты Фронта 2. В App.tsx вставляется одной строкой: {orchestratorRoutes}
+
 export const orchestratorRoutes = (
   <>
     <Route path="queue" element={<QueuePage />} />

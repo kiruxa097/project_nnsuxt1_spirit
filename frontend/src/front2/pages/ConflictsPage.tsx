@@ -17,7 +17,7 @@ type Conflict = {
   note: string | null
 }
 
-//конфликты из двух источников: блокировки и очередь (кто ждёт другой запуск по зависимости).
+
 function buildConflicts(locks: Lock[], queue: Run[]): Conflict[] {
   const result = new Map<string, Conflict>()
 

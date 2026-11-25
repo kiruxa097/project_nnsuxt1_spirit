@@ -3,8 +3,7 @@ import { errorText } from './api'
 
 type State<T> = { data: T | null; error: string | null; loading: boolean; updatedAt: Date | null }
 
-// Загружает данные и сама обновляет их каждые intervalMs (по умолчанию 5 секунд).
-// Пока вкладка скрыта — не дёргает сервер.
+
 export function useAutoRefresh<T>(fetcher: () => Promise<T>, intervalMs = 5000) {
   const fetcherRef = useRef(fetcher)
   useEffect(() => {

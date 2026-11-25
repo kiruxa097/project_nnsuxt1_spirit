@@ -4,25 +4,19 @@ import type { HistoryFilters, Lock, LogEntry, Priority, Run, RunId } from './typ
 
 
 export const ENDPOINTS = {
-  // GET: запуски со статусами CREATED / QUEUED / RUNNING.
+
   queue: '',
 
-  // GET: завершённые запуски (COMPLETED / FAILED / CANCELLED).
   history: '',
 
-  // GET: один запуск по id (путь с {id}).
   run: '',
 
-  // GET: журнал выполнения запуска (путь с {id}), массив {time, level, message}.
   runLog: '',
 
-  // POST: отменить запуск (путь с {id}).
   cancelRun: '',
 
-  // PATCH/POST: изменить приоритет (путь с {id}), тело {priority}.
   changePriority: '',
 
-  // GET: текущие блокировки ресурсов (массив Lock, с ожидающими запусками).
   locks: '',
 }
 
@@ -50,7 +44,7 @@ export const getLocks = () => getOrEmpty<Lock[]>(ENDPOINTS.locks, [])
 
 export function getHistory(filters: HistoryFilters) {
   const params: Record<string, string> = {}
-  //уточнить у бэка названия параметров фильтра
+
   if (filters.dateFrom) params.date_from = filters.dateFrom
   if (filters.dateTo) params.date_to = filters.dateTo
   if (filters.processId) params.process_id = filters.processId
@@ -76,6 +70,5 @@ export async function cancelRun(id: RunId): Promise<void> {
 
 export async function changePriority(id: RunId, priority: Priority): Promise<void> {
   if (!isReady(ENDPOINTS.changePriority)) throw new Error(NOT_READY)
-  //PATCH
   await api.patch(fill(ENDPOINTS.changePriority, id), { priority })
 }
