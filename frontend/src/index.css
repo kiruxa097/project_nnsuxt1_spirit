@@ -61,3 +61,58 @@ a { color: var(--accent); }
 .page-title { margin-bottom: 24px; }
 .page-title h1 { margin: 0 0 4px; font-size: 24px; }
 .page-title p, .muted { margin: 0; color: var(--muted); }
+
+
+/*Главная панель*/
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 32px;
+}
+.stat-card {
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.stat-value { font-size: 32px; font-weight: 700; }
+.stat-label { margin-top: 4px; font-size: 14px; color: var(--muted); }
+.tone-running .stat-value { color: #3ecf8e; }
+.tone-waiting .stat-value { color: #f5a524; }
+.tone-success .stat-value { color: var(--accent); }
+.tone-error .stat-value { color: #f31260; }
+
+.section-title { margin: 0 0 12px; font-size: 18px; }
+
+.table { width: 100%; border-collapse: collapse; }
+.table th,
+.table td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.table th { font-size: 13px; font-weight: 600; color: var(--muted); }
+
+.badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--border);
+}
+.badge-running { color: #3ecf8e; background: rgba(62, 207, 142, 0.12); }
+.badge-queued,
+.badge-created { color: #f5a524; background: rgba(245, 165, 36, 0.12); }
+.badge-completed { color: var(--accent); background: rgba(76, 154, 255, 0.12); }
+.badge-failed { color: #f31260; background: rgba(243, 18, 96, 0.12); }
+.badge-cancelled { color: var(--muted); }
+
+.alert-error {
+  padding: 12px 16px;
+  color: #f31260;
+  background: rgba(243, 18, 96, 0.1);
+  border: 1px solid rgba(243, 18, 96, 0.35);
+  border-radius: 8px;
+}
