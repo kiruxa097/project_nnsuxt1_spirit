@@ -22,7 +22,7 @@
 | `risk_results` | Результаты `BP-01` (`APPLICATION_CHECK`), `BP-03` (`OVERDUE_MONITORING`), `BP-04` (`PORTFOLIO_REPORT`) |
 
 ## Статусы запуска (`tasks.status`)
-`CREATED` → `QUEUED` → `RUNNING` / `BLOCKED` → `COMPLETED` / `FAILED` / `REJECTED` / `CANCELLED` / `TIMEOUT`.
+`CREATED` → `QUEUED` → `RUNNING` / `COMPLETED` / `FAILED` / `CANCELLED` /.
 
 ## Приоритеты (`tasks.priority`)
 1 — Критически важный · 2 — Важный · 3 — Средний · 4 — Обычный · 5 — Низкий.
