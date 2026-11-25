@@ -29,3 +29,19 @@ export type DashboardSummary = {
   failed: number // с ошибкой
   recentRuns: Run[] // последние запуски
 }
+
+export type ProcessParam = {
+  name: string 
+  label: string 
+  type: 'text' | 'date' | 'list' 
+}
+
+export type ProcessInfo = {
+  id: string 
+  name: string 
+  description: string 
+  purpose: string 
+  params: ProcessParam[] 
+  available: boolean 
+  unavailableReason?: string 
+}

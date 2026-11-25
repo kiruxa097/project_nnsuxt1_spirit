@@ -116,3 +116,49 @@ a { color: var(--accent); }
   border: 1px solid rgba(243, 18, 96, 0.35);
   border-radius: 8px;
 }
+
+
+/*Список процессов*/
+.process-list { display: grid; gap: 16px; }
+.process-card {
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.process-head { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.process-head h2 { margin: 0; font-size: 18px; }
+.process-id {
+  padding: 2px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  background: rgba(76, 154, 255, 0.12);
+  border-radius: 999px;
+}
+.process-text { margin: 0 0 12px; color: var(--muted); line-height: 1.5; }
+.process-meta { display: grid; grid-template-columns: 160px 1fr; gap: 8px 16px; margin: 0 0 16px; }
+.process-meta dt { color: var(--muted); font-size: 14px; }
+.process-meta dd { margin: 0; }
+.chip {
+  display: inline-block;
+  margin: 0 6px 6px 0;
+  padding: 2px 10px;
+  font-size: 13px;
+  background: var(--border);
+  border-radius: 999px;
+}
+.process-footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.availability { font-size: 14px; }
+.availability.ok { color: #3ecf8e; }
+.availability.no { color: #f5a524; }
+.btn {
+  display: inline-block;
+  padding: 8px 18px;
+  font-weight: 600;
+  color: #fff;
+  text-decoration: none;
+  background: var(--accent);
+  border-radius: 8px;
+}
+.btn-disabled { color: var(--muted); background: var(--border); cursor: not-allowed; }
