@@ -1,0 +1,211 @@
+:root {
+  --bg: #0b0b0d;
+  --surface: #141418;
+  --border: #26262d;
+  --text: #ececf1;
+  --muted: #8b8b98;
+  --accent: #4c9aff;
+
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; }
+a { color: var(--accent); }
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 56px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.brand { font-weight: 700; }
+
+.body { display: flex; }
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  flex-shrink: 0;
+  width: 240px;
+  height: calc(100vh - 56px);
+  overflow-y: auto;
+  padding: 16px 12px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+}
+.nav-group { margin-bottom: 20px; }
+.nav-group-title {
+  padding: 0 12px 6px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.nav-link {
+  display: block;
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: var(--muted);
+  text-decoration: none;
+}
+.nav-link:hover { color: var(--text); }
+.nav-link.active { color: var(--text); background: var(--border); }
+
+.content { flex: 1; min-width: 0; max-width: 1100px; padding: 24px; }
+.page-title { margin-bottom: 24px; }
+.page-title h1 { margin: 0 0 4px; font-size: 24px; }
+.page-title p, .muted { margin: 0; color: var(--muted); }
+
+
+/*Главная панель*/
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 32px;
+}
+.stat-card {
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.stat-value { font-size: 32px; font-weight: 700; }
+.stat-label { margin-top: 4px; font-size: 14px; color: var(--muted); }
+.tone-running .stat-value { color: #3ecf8e; }
+.tone-waiting .stat-value { color: #f5a524; }
+.tone-success .stat-value { color: var(--accent); }
+.tone-error .stat-value { color: #f31260; }
+
+.section-title { margin: 0 0 12px; font-size: 18px; }
+
+.table { width: 100%; border-collapse: collapse; }
+.table th,
+.table td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.table th { font-size: 13px; font-weight: 600; color: var(--muted); }
+
+.badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--border);
+}
+.badge-running { color: #3ecf8e; background: rgba(62, 207, 142, 0.12); }
+.badge-queued,
+.badge-created { color: #f5a524; background: rgba(245, 165, 36, 0.12); }
+.badge-completed { color: var(--accent); background: rgba(76, 154, 255, 0.12); }
+.badge-failed { color: #f31260; background: rgba(243, 18, 96, 0.12); }
+.badge-cancelled { color: var(--muted); }
+
+.alert-error {
+  padding: 12px 16px;
+  color: #f31260;
+  background: rgba(243, 18, 96, 0.1);
+  border: 1px solid rgba(243, 18, 96, 0.35);
+  border-radius: 8px;
+}
+
+
+/*Список процессов*/
+.process-list { display: grid; gap: 16px; }
+.process-card {
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.process-head { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.process-head h2 { margin: 0; font-size: 18px; }
+.process-id {
+  padding: 2px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  background: rgba(76, 154, 255, 0.12);
+  border-radius: 999px;
+}
+.process-text { margin: 0 0 12px; color: var(--muted); line-height: 1.5; }
+.process-meta { display: grid; grid-template-columns: 160px 1fr; gap: 8px 16px; margin: 0 0 16px; }
+.process-meta dt { color: var(--muted); font-size: 14px; }
+.process-meta dd { margin: 0; }
+.chip {
+  display: inline-block;
+  margin: 0 6px 6px 0;
+  padding: 2px 10px;
+  font-size: 13px;
+  background: var(--border);
+  border-radius: 999px;
+}
+.process-footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.availability { font-size: 14px; }
+.availability.ok { color: #3ecf8e; }
+.availability.no { color: #f5a524; }
+.btn {
+  display: inline-block;
+  padding: 8px 18px;
+  font-weight: 600;
+  color: #fff;
+  text-decoration: none;
+  background: var(--accent);
+  border-radius: 8px;
+}
+.btn-disabled { color: var(--muted); background: var(--border); cursor: not-allowed; }
+
+
+/*Форма запуска*/
+.launch-form {
+  max-width: 520px;
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.field { margin-bottom: 16px; }
+.field label { display: block; margin-bottom: 6px; font-size: 14px; font-weight: 600; }
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  padding: 10px 12px;
+  font: inherit;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.field input:focus,
+.field select:focus,
+.field textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+.field-error { margin-top: 6px; font-size: 13px; color: #f31260; }
+
+button.btn { border: 0; font: inherit; font-weight: 600; cursor: pointer; }
+button.btn:disabled { opacity: 0.6; cursor: wait; }
+
+.alert-warning {
+  padding: 12px 16px;
+  color: #f5a524;
+  background: rgba(245, 165, 36, 0.1);
+  border: 1px solid rgba(245, 165, 36, 0.35);
+  border-radius: 8px;
+}
+
+.result-block { max-width: 520px; margin-top: 16px; }
+.result { padding: 14px 16px; border-radius: 8px; border: 1px solid var(--border); }
+.result p { margin: 6px 0 0; }
+.result-created { color: #60a5fa; background: rgba(96, 165, 250, 0.1); border-color: rgba(96, 165, 250, 0.35); }
+.result-queued { color: #f5a524; background: rgba(245, 165, 36, 0.1); border-color: rgba(245, 165, 36, 0.35); }
+.result-running { color: #60a5fa; background: rgba(96, 165, 250, 0.1); border-color: rgba(96, 165, 250, 0.35); }
+.result-completed { color: #3ecf8e; background: rgba(62, 207, 142, 0.1); border-color: rgba(62, 207, 142, 0.35); }
+.result-failed, .result-cancelled { color: #f31260; background: rgba(243, 18, 96, 0.1); border-color: rgba(243, 18, 96, 0.35); }

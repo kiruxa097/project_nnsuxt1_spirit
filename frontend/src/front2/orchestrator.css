@@ -1,0 +1,73 @@
+
+.orc-status-line { margin-bottom: 16px; }
+.orc-notice {
+  margin-bottom: 8px; padding: 8px 12px; border-radius: 8px;
+  background: #3a2f0b; border: 1px solid #6b5a1a; color: #f3d77a; font-size: 14px;
+}
+.orc-notice-error { background: #3a1414; border-color: #6b2323; color: #ff9b9b; }
+.orc-refresh { font-size: 13px; }
+.orc-summary { display: flex; gap: 24px; margin-bottom: 12px; }
+.orc-h2 { margin: 28px 0 12px; font-size: 18px; }
+
+.orc-table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
+.orc-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.orc-table th, .orc-table td { padding: 10px 12px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--border); }
+.orc-table th { color: var(--muted); font-weight: 500; background: var(--surface); white-space: nowrap; }
+.orc-table tr:last-child td { border-bottom: none; }
+
+.orc-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; white-space: nowrap; border: 1px solid var(--border); }
+.orc-status-created { color: #b0b0bd; }
+.orc-status-queued { color: #f3d77a; border-color: #6b5a1a; }
+.orc-status-running { color: #6db3ff; border-color: #234d80; }
+.orc-status-completed { color: #6ee7a0; border-color: #1f6b43; }
+.orc-status-failed { color: #ff9b9b; border-color: #6b2323; }
+.orc-status-cancelled { color: #8b8b98; }
+.orc-priority-critical { color: #ff9b9b; border-color: #6b2323; }
+.orc-priority-high { color: #ffb86b; border-color: #7a4a17; }
+.orc-priority-medium { color: #f3d77a; border-color: #6b5a1a; }
+.orc-priority-normal { color: var(--text); }
+.orc-priority-low { color: var(--muted); }
+.orc-mode-read { color: #6db3ff; border-color: #234d80; }
+.orc-mode-write { color: #ffb86b; border-color: #7a4a17; }
+
+.orc-btn {
+  padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text); font: inherit; cursor: pointer; text-decoration: none;
+  display: inline-block;
+}
+.orc-btn:hover { border-color: var(--muted); }
+.orc-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.orc-btn-small { padding: 3px 8px; font-size: 13px; }
+.orc-btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.orc-btn-danger { color: #ff9b9b; border-color: #6b2323; }
+.orc-actions { display: flex; flex-direction: column; gap: 6px; }
+.orc-actions-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.orc-error-text { color: #ff9b9b; font-size: 13px; }
+
+select, input[type='date'] {
+  padding: 5px 8px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text); font: inherit;
+}
+
+.orc-details { display: grid; grid-template-columns: 200px 1fr; gap: 8px 16px; margin: 0 0 16px; }
+.orc-details dt { color: var(--muted); }
+.orc-details dd { margin: 0; }
+.orc-reason { margin-bottom: 16px; padding: 10px 14px; border-radius: 8px; background: var(--surface); border: 1px solid var(--border); }
+
+.orc-log { list-style: none; margin: 0; padding: 0; border: 1px solid var(--border); border-radius: 10px; }
+.orc-log li { padding: 8px 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
+.orc-log li:last-child { border-bottom: none; }
+.orc-log li .muted { margin-right: 12px; }
+.orc-log-level { margin-right: 12px; font-size: 12px; color: var(--accent); }
+
+.orc-filters { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; margin-bottom: 16px; }
+.orc-filters label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
+
+.orc-conflicts { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
+.orc-conflict { padding: 14px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border); }
+.orc-conflict-deadlock { border-color: #6b2323; }
+.orc-conflict-chain { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 6px; }
+.orc-node { min-width: 160px; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border); }
+.orc-node-wait { border-color: #6b5a1a; }
+.orc-node-hold { border-color: #234d80; }
+.orc-arrow { text-align: center; font-size: 13px; }
