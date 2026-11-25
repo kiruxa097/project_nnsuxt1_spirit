@@ -21,8 +21,10 @@ export const navGroups: NavGroup[] = [
     {
         title: 'Оркестратор', // Фронт 2
         items: [
-            // Фронт 2 добавляет сюда свои страницы, например:
-            // { to: '/queue', label: 'Очередь задач' },
+            { to: '/queue', label: 'Очередь задач' },
+            { to: '/locks', label: 'Блокировки' },
+            { to: '/conflicts', label: 'Конфликты' },
+            { to: '/history', label: 'История' },
         ],
     },
 ]
