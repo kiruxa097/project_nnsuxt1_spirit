@@ -5,7 +5,6 @@ import LaunchPage from './pages/LaunchPage'
 import NotFoundPage from './pages/NotFoundPage'
 import ProcessesPage from './pages/ProcessesPage'
 import ResultsPage from './pages/ResultsPage'
-import { orchestratorRoutes } from './front2/routes'
 
 export default function App() {
   return (
@@ -16,7 +15,6 @@ export default function App() {
           <Route path="processes" element={<ProcessesPage />} />
           <Route path="processes/:processId/launch" element={<LaunchPage />} />
           <Route path="results" element={<ResultsPage />} />
-          {orchestratorRoutes}
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>
