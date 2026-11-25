@@ -16,18 +16,13 @@ REGIONS = [
 
 CLIENT_TYPES = ["INDIVIDUAL", "SELF_EMPLOYED", "SME"]
 
-FIRST_NAMES = [
-    "Артём", "Дмитрий", "Максим", "Иван", "Александр",
-    "Анна", "Елена", "Мария", "София", "Дарья",
-]
-LAST_NAMES = [
-    "Смирнов", "Иванов", "Кузнецов", "Попов", "Соколов",
-    "Волкова", "Морозова", "Новикова", "Фёдорова", "Орлова",
-]
-PATRONYMICS = [
-    "Александрович", "Дмитриевич", "Сергеевич", "Андреевич", "Михайлович",
-    "Александровна", "Дмитриевна", "Сергеевна", "Андреевна", "Михайловна",
-]
+MALE_FIRST_NAMES = ["Артём", "Дмитрий", "Максим", "Иван", "Александр"]
+MALE_LAST_NAMES = ["Смирнов", "Иванов", "Кузнецов", "Попов", "Соколов"]
+MALE_PATRONYMICS = ["Александрович", "Дмитриевич", "Сергеевич", "Андреевич", "Михайлович"]
+
+FEMALE_FIRST_NAMES = ["Анна", "Елена", "Мария", "София", "Дарья"]
+FEMALE_LAST_NAMES = ["Волкова", "Морозова", "Новикова", "Фёдорова", "Орлова"]
+FEMALE_PATRONYMICS = ["Александровна", "Дмитриевна", "Сергеевна", "Андреевна", "Михайловна"]
 
 
 def q_money(val: float | Decimal) -> Decimal:
@@ -46,11 +41,27 @@ def sql_literal(val) -> str:
     if isinstance(val, (dict, list)):
         raw = json.dumps(val, ensure_ascii=False).replace("'", "''")
         return f"'{raw}'::jsonb"
-    if isinstance(val, (tuple, set)):
+    if isinstance(val, tuple):
+        if not val:
+            return "'{}'::text[]"
         items = ", ".join(sql_literal(x) for x in val)
-        return f"ARRAY[{items}]"
+        return f"ARRAY[{items}]::text[]"
     escaped = str(val).replace("'", "''")
     return f"'{escaped}'"
+
+
+def random_full_name(rng: random.Random) -> str:
+    if rng.random() < 0.5:
+        return (
+            f"{rng.choice(MALE_LAST_NAMES)} "
+            f"{rng.choice(MALE_FIRST_NAMES)} "
+            f"{rng.choice(MALE_PATRONYMICS)}"
+        )
+    return (
+        f"{rng.choice(FEMALE_LAST_NAMES)} "
+        f"{rng.choice(FEMALE_FIRST_NAMES)} "
+        f"{rng.choice(FEMALE_PATRONYMICS)}"
+    )
 
 
 def build_seed_statements(
@@ -103,8 +114,8 @@ def build_seed_statements(
             "Проверка заявки на кредит",
             "Оценка клиента, кредитной истории, текущих задолженностей и платёжеспособности по заявке",
             {"required": ["application_number"], "optional": ["as_of_date"]},
-            ["clients_db", "credit_registry"],
-            ["risk_results_store"],
+            ("clients_db", "credit_registry"),
+            ("risk_results_store",),
             [{"process_id": "BP-02", "mode": "FRESH_CLIENT_DATA"}],
             "ALLOW_VERSIONED",
             1,
@@ -117,8 +128,8 @@ def build_seed_statements(
             "Обновление информации о клиентах",
             "Получение данных из внешних источников, валидация, обновление клиентской базы и версии",
             {"required": ["update_date"], "optional": ["client_ids"]},
-            ["clients_db"],
-            ["clients_db"],
+            ("clients_db",),
+            ("clients_db",),
             [],
             "QUEUE",
             3,
@@ -131,8 +142,8 @@ def build_seed_statements(
             "Мониторинг просроченных платежей",
             "Сравнение графиков и фактических платежей за дату мониторинга, расчёт просрочек",
             {"required": ["monitoring_date"]},
-            ["credit_registry", "payment_schedules", "payments_system"],
-            ["risk_results_store"],
+            ("credit_registry", "payment_schedules", "payments_system"),
+            ("risk_results_store",),
             [{"process_id": "PAYMENTS_SYNC", "mode": "ACTUAL_PAYMENTS"}],
             "REJECT",
             2,
@@ -145,14 +156,28 @@ def build_seed_statements(
             "Формирование отчёта о кредитном портфеле",
             "Агрегация задолженности, доли просрочек и группировка по регионам и типам клиентов",
             {"required": ["report_date"]},
-            ["credit_registry", "risk_results_store", "clients_db"],
-            ["portfolio_reports_store"],
+            ("credit_registry", "risk_results_store", "clients_db"),
+            ("portfolio_reports_store",),
             [{"process_id": "BP-03", "same_date": True, "required_status": "COMPLETED"}],
             "QUEUE",
             4,
             900,
             2,
             True,
+        ),
+        (
+            "PAYMENTS_SYNC",
+            "Внешнее обновление информации о платежах",
+            "Внешний процесс загрузки фактических платежей в платёжную систему (пересекается с BP-03)",
+            {"required": ["sync_date"]},
+            (),
+            ("payments_system",),
+            [],
+            "QUEUE",
+            2,
+            300,
+            1,
+            False,
         ),
     ]
     for p in processes_data:
@@ -170,11 +195,13 @@ def build_seed_statements(
             f"{prio}, {timeout_s}, {max_par}, {sql_literal(snap_read)}, {sql_literal(now)}"
             f") ON CONFLICT (id) DO UPDATE SET "
             f"name = EXCLUDED.name, description = EXCLUDED.description, "
-            f"default_priority = EXCLUDED.default_priority, duplicate_policy = EXCLUDED.duplicate_policy;"
+            f"read_resources = EXCLUDED.read_resources, write_resources = EXCLUDED.write_resources, "
+            f"dependencies = EXCLUDED.dependencies, default_priority = EXCLUDED.default_priority, "
+            f"duplicate_policy = EXCLUDED.duplicate_policy;"
         )
 
     for cid in range(1, num_clients + 1):
-        fname = f"{rng.choice(LAST_NAMES)} {rng.choice(FIRST_NAMES)} {rng.choice(PATRONYMICS)}"
+        fname = random_full_name(rng)
         bdate = date(1965, 1, 1) + timedelta(days=rng.randint(0, 14000))
         region = rng.choice(REGIONS)
         ctype = rng.choices(CLIENT_TYPES, weights=[0.7, 0.18, 0.12], k=1)[0]
