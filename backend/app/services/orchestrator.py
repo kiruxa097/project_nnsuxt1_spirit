@@ -187,20 +187,21 @@ def _acquire_locks(
 def _admit_or_queue(db: Session, task: Task, process: Process) -> Task:
     dependency_result = evaluate_task_dependencies(db, task)
     if dependency_result["state"] == "ABORT":
-        task.status = "REJECTED"
+        task.status = "FAILED"
+        task.finished_at = now_utc()
         task.decision_reason = dependency_result["reason"]
         task.blocked_by_task_id = dependency_result["blocking_task_id"]
-        _log(db, task, "DEPENDENCY_FAILED", "REJECT", task.decision_reason)
+        _log(db, task, "DEPENDENCY_FAILED", "DENY", task.decision_reason)
         db.commit()
         db.refresh(task)
         return task
 
     if dependency_result["state"] == "WAITING":
-        task.status = "BLOCKED"
+        task.status = "QUEUED"
         task.decision_reason = dependency_result["reason"]
         task.blocked_by_task_id = dependency_result["blocking_task_id"]
         task.queued_at = task.queued_at or now_utc()
-        _log(db, task, "DEPENDENCY_WAIT", "BLOCK", task.decision_reason)
+        _log(db, task, "DEPENDENCY_WAIT", "QUEUE", task.decision_reason)
         db.commit()
         db.refresh(task)
         return task
@@ -277,9 +278,9 @@ def create_execution(db: Session, process_id: str, params: dict[str, Any]) -> Ta
 
 
 def promote_waiting_tasks(db: Session, limit: int = 100) -> int:
-    """Повторно проверяет BLOCKED/QUEUED задачи после освобождения ресурсов."""
+    """Повторно проверяет задачи QUEUED после освобождения ресурсов."""
     tasks = db.scalars(select(Task).where(
-        Task.status.in_(("BLOCKED", "QUEUED", "CREATED"))
+        Task.status == "QUEUED"
     ).order_by(Task.priority.asc(), Task.queued_at.asc().nullsfirst(), Task.id.asc())
      .limit(limit).with_for_update(skip_locked=True)).all()
 
@@ -360,12 +361,12 @@ def list_processes(db: Session) -> list[dict]:
 
 def get_queue(db: Session) -> list[dict]:
     tasks = db.scalars(select(Task).where(
-        Task.status.in_(("CREATED", "QUEUED", "BLOCKED"))
+        Task.status == "QUEUED"
     ).order_by(Task.priority.asc(), Task.queued_at.asc().nullsfirst(), Task.id.asc())).all()
     return [{
         "execution_id": task.id,
         "process_code": task.process_id,
-        "status": "waiting_dependency" if task.status == "BLOCKED" else "queued",
+        "status": "QUEUED",
         "position": index,
     } for index, task in enumerate(tasks, start=1)]
 

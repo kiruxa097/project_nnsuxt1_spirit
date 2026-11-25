@@ -13,7 +13,7 @@ from app.db.models import (
     TaskDependency,
 )
 
-TERMINAL_FAILURE_STATUSES = {"FAILED", "QUEUED","CANCELLED"}
+TERMINAL_FAILURE_STATUSES = {"FAILED", "CANCELLED"}
 
 
 def get_required_dependencies(session: Session, process_id: str) -> list[dict[str, Any]]:

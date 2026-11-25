@@ -17,7 +17,7 @@ paths:
               required: [process_id]
               properties:
                 process_id:
-                  type: integer
+                  type: string
                 report_date:
                   type: string
                   format: date
@@ -35,13 +35,13 @@ paths:
                   id:
                     type: integer
                   process_id:
-                    type: integer
+                    type: string
                   process_code:
                     type: string
                     example: BP-01
                   status:
                     type: string
-                    enum: [queued, waiting_dependency, running, success, failed, cancelled]
+                    enum: [CREATED, QUEUED, RUNNING, COMPLETED, FAILED, CANCELLED]
                   report_date:
                     type: string
                     format: date
@@ -75,13 +75,13 @@ paths:
                     id:
                       type: integer
                     process_id:
-                      type: integer
+                      type: string
                     process_code:
                       type: string
                       example: BP-01
                     status:
                       type: string
-                      enum: [queued, waiting_dependency, running, success, failed, cancelled]
+                      enum: [CREATED, QUEUED, RUNNING, COMPLETED, FAILED, CANCELLED]
                     report_date:
                       type: string
                       format: date
@@ -119,13 +119,13 @@ paths:
                   id:
                     type: integer
                   process_id:
-                    type: integer
+                    type: string
                   process_code:
                     type: string
                     example: BP-01
                   status:
                     type: string
-                    enum: [queued, waiting_dependency, running, success, failed, cancelled]
+                    enum: [CREATED, QUEUED, RUNNING, COMPLETED, FAILED, CANCELLED]
                   report_date:
                     type: string
                     format: date
@@ -166,7 +166,7 @@ paths:
                     type: integer
                   status:
                     type: string
-                    enum: [cancelled]
+                    enum: [CANCELLED]
         "404":
           description: Запуск не найден
         "409":
@@ -187,7 +187,7 @@ paths:
                   required: [id, code, name, duplicate_policy]
                   properties:
                     id:
-                      type: integer
+                      type: string
                     code:
                       type: string
                       example: BP-01
@@ -219,7 +219,7 @@ paths:
                       type: string
                     status:
                       type: string
-                      enum: [queued, waiting_dependency]
+                      enum: [QUEUED]
                     position:
                       type: integer
                       description: Место в очереди

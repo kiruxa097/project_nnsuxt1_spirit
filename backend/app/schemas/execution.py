@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -16,7 +16,7 @@ class ExecutionResponse(BaseModel):
     id: int
     process_id: str
     process_code: str
-    status: str
+    status: Literal["CREATED", "QUEUED", "RUNNING", "COMPLETED", "FAILED", "CANCELLED"]
     report_date: date | None = None
     created_at: datetime
     started_at: datetime | None = None
@@ -27,7 +27,7 @@ class ExecutionResponse(BaseModel):
 
 class CancelResponse(BaseModel):
     id: int
-    status: str
+    status: Literal["CANCELLED"]
 
 
 class ProcessResponse(BaseModel):
@@ -41,7 +41,7 @@ class ProcessResponse(BaseModel):
 class QueueResponse(BaseModel):
     execution_id: int
     process_code: str
-    status: str
+    status: Literal["QUEUED"]
     position: int
 
 

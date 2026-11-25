@@ -22,7 +22,9 @@
 | `risk_results` | Результаты `BP-01` (`APPLICATION_CHECK`), `BP-03` (`OVERDUE_MONITORING`), `BP-04` (`PORTFOLIO_REPORT`) |
 
 ## Статусы запуска (`tasks.status`)
-`CREATED` → `QUEUED` → `RUNNING` / `COMPLETED` / `FAILED` / `CANCELLED` /.
+`CREATED` → `QUEUED` → `RUNNING` → `COMPLETED` / `FAILED` / `CANCELLED`.
+
+`COMPLETED`, `FAILED` и `CANCELLED` — терминальные статусы. Ожидание зависимости и ожидание ресурсов обозначаются статусом `QUEUED`; причина ожидания хранится отдельно в `decision_reason`.
 
 ## Приоритеты (`tasks.priority`)
 1 — Критически важный · 2 — Важный · 3 — Средний · 4 — Обычный · 5 — Низкий.

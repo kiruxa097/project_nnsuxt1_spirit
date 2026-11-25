@@ -1,11 +1,10 @@
-from datetime import date, datetime, timezone
+from datetime import date
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.statuses import to_api_status
 from app.db.database import get_db
-from app.db.models import Lock, Process, Resource, Task
+from app.db.models import Task
 from app.schemas.execution import (
     CancelResponse, ExecutionCreate, ExecutionResponse, LockResponse,
     ProcessResponse, QueueResponse,
@@ -27,12 +26,19 @@ def serialize_execution(task: Task) -> dict:
         or params.get("sync_date")
         or params.get("as_of_date")
     )
+    if isinstance(raw_date, date):
+        report_date = raw_date
+    elif raw_date:
+        report_date = date.fromisoformat(str(raw_date))
+    else:
+        report_date = None
+
     return {
         "id": task.id,
         "process_id": task.process_id,
         "process_code": task.process_id,
         "status": to_api_status(task.status),
-        "report_date": date.fromisoformat(raw_date) if raw_date else None,
+        "report_date": report_date,
         "created_at": task.created_at,
         "started_at": task.started_at,
         "finished_at": task.finished_at,
@@ -103,7 +109,7 @@ def cancel_execution_endpoint(
 ):
     task = cancel_execution(db, execution_id)
     promote_waiting_tasks(db)
-    return {"id": task.id, "status": "cancelled"}
+    return {"id": task.id, "status": to_api_status(task.status)}
 
 
 @router.get(
